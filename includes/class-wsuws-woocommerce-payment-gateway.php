@@ -1,6 +1,6 @@
 <?php
 
-class WSUWS_WooCommerce_Payment_Gateway {
+class WSUWS_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 	/**
 	 * @var WSUWS_WooCommerce_Payment_Gateway
 	 */
