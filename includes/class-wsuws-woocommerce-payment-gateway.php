@@ -1,31 +1,44 @@
 <?php
 
 class WSUWS_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
-	/**
-	 * @var WSUWS_WooCommerce_Payment_Gateway
-	 */
-	private static $instance;
+	public function __construct() {
+		$this->id = 'wsuws_gateway';
+		$this->method_title = 'WSU ITS Webservice';
+		$this->method_description = 'Use the WSU webservice to process payments.';
 
-	/**
-	 * Maintain and return the one instance. Initiate hooks when
-	 * called the first time.
-	 *
-	 * @since 0.0.1
-	 *
-	 * @return \WSUWS_WooCommerce_Payment_Gateway
-	 */
-	public static function get_instance() {
-		if ( ! isset( self::$instance ) ) {
-			self::$instance = new WSUWS_WooCommerce_Payment_Gateway();
-			self::$instance->setup_hooks();
-		}
-		return self::$instance;
+		$this->init_form_fields();
+		$this->init_settings();
+
+		$this->title = $this->get_option( 'title' );
+
+		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 	}
 
 	/**
-	 * Setup hooks to include.
+	 * Initializes the fields displayed in the settings page for WSU ITS Webservice.
 	 *
 	 * @since 0.0.1
 	 */
-	public function setup_hooks() {}
+	public function init_form_fields() {
+		$this->form_fields = array(
+			'enabled' => array(
+				'title' => 'Enable/Disable',
+				'type' => 'checkbox',
+				'label' => 'Enable payments through WSU ITS',
+				'default' => 'yes',
+			),
+			'title' => array(
+				'title' => 'Title',
+				'type' => 'text',
+				'description' => 'This controls the title which the user sees during checkout.',
+				'default' => 'Credit Card',
+				'desc_tip' => true,
+			),
+			'description' => array(
+				'title' => 'Customer Message',
+				'type' => 'textarea',
+				'default' => '',
+			),
+		);
+	}
 }
