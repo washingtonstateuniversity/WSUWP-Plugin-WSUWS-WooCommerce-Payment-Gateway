@@ -1,0 +1,16 @@
+{
+  "name": "wsuws-woocommerce-payment-gateway",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/washingtonstateuniversity/WSUWP-Plugin-WSUWS-WooCommerce-Payment-Gateway"
+  },
+  "author": "washingtonstateuniversity",
+  "license": "GPL-2.0+",
+  "devDependencies": {
+    "grunt": "~1.0.1",
+    "grunt-contrib-jshint": "^1.0.0",
+    "grunt-jscs": "^3.0.1",
+    "grunt-phpcs": "^0.4.0"
+  }
+}
