@@ -65,10 +65,10 @@ class WSUWS_Gateway_Request {
 
 		// @codingStandardsIgnoreStart
 		$result = array(
-			'return_code' => $response->AuthRequestWithAddressResponse->RequestReturnCode,
-			'return_message' => $response->AuthRequestWithAddressResponse->RequestReturnMessage,
-			'request_guid' => $response->AuthRequestWithAddressResponse->RequestGUID,
-			'redirect_url' => $response->AuthRequestWithAddressResponse->WebPageURLAndGUID,
+			'return_code' => $response->AuthRequestWithAddressResult->RequestReturnCode,
+			'return_message' => $response->AuthRequestWithAddressResult->RequestReturnMessage,
+			'request_guid' => $response->AuthRequestWithAddressResult->RequestGUID,
+			'redirect_url' => $response->AuthRequestWithAddressResult->WebPageURLAndGUID,
 		);
 		// @codingStandardsIgnoreEnd
 
