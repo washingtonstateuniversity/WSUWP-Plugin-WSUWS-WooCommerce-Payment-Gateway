@@ -13,9 +13,6 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-// The core plugin class.
-
-
 add_action( 'plugins_loaded', 'wsuwp_load_wsuws_woocommerce_payment_gateway' );
 /**
  * Loads the WSUWS payment gateway class, which extends WooCommerce.
@@ -26,6 +23,10 @@ function wsuwp_load_wsuws_woocommerce_payment_gateway() {
 	if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		require dirname( __FILE__ ) . '/includes/class-wsuws-woocommerce-payment-gateway.php';
 		add_filter( 'woocommerce_payment_gateways', 'wsuwp_add_wsuws_woocommerce_payment_gateway' );
+
+		// Register the gateway's response handler.
+		include_once dirname( __FILE__ ) . '/includes/class-wsuws-gateway-response.php';
+		new WSUWS_Gateway_Response();
 	}
 }
 
