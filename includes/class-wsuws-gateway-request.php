@@ -88,13 +88,13 @@ class WSUWS_Gateway_Request {
 	 */
 	protected function build_auth_request_with_address( $order ) {
 		$request = array(
-			'MerchantID' => '',
+			'MerchantID' => apply_filters( 'wsuws_gateway_merchant_id', '' ),
 			'AuthorizationAmount' => $order->order_total, // decimal, required
-			'OneStepTranType' => '',
-			'ApplicationIDPrimary' => '',
+			'OneStepTranType' => apply_filters( 'wsuws_gateway_trantype', '' ),
+			'ApplicationIDPrimary' => apply_filters( 'wsuws_gateway_application_id', '' ),
 			'ReturnURL' => $this->notify_url,
 			'AuthorizationAttemptLimit' => 3,
-			'EmailAddressDeptContact' => 'jeremy.felt@wsu.edu',
+			'EmailAddressDeptContact' => apply_filters( 'wsuws_gateway_contact_email', '' ),
 			'BillingAddress' => $order->billing_address_1 . ' ' . $order->billing_address_2,
 			'BillingState' => $order->billing_state,
 			'BillingZipCode' => $order->billing_postcode,
