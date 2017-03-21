@@ -66,7 +66,7 @@ class WSUWS_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 	 * @return array
 	 */
 	public function process_payment( $order_id ) {
-		include_once dirname( __FILE__ ) . 'class-wsuws-gateway-request.php';
+		include_once dirname( __FILE__ ) . '/class-wsuws-gateway-request.php';
 
 		$order = wc_get_order( $order_id );
 		$request = new WSUWS_Gateway_Request();
