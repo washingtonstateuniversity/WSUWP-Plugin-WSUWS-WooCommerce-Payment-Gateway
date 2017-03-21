@@ -53,11 +53,15 @@ class WSUWS_Gateway_Request {
 	public function get_request_url( $order ) {
 		$client = new SoapClient( $this->csp_wsdl_url );
 
+		WSUWS_WooCommerce_Payment_Gateway::log( 'Client created: ' . print_r( $client, true ) );
+
 		$args = $this->build_auth_request_with_address( $order );
 
 		WSUWS_WooCommerce_Payment_Gateway::log( 'Request arguments for order ' . $order->get_order_number() . ':' . print_r( $args, true ) ); // @codingStandardsIgnoreLine
 
 		$response = $client->AuthRequestWithAddress( $args );
+
+		WSUWS_WooCommerce_Payment_Gateway::log( 'Response received: ' . print_r( $response, true ) );
 
 		// @codingStandardsIgnoreStart
 		$result = array(
