@@ -53,18 +53,22 @@ class WSUWS_Gateway_Request {
 	public function get_request_url( $order ) {
 		$client = new SoapClient( $this->csp_wsdl_url );
 
+		WSUWS_WooCommerce_Payment_Gateway::log( 'Client created: ' . print_r( $client, true ) ); // @codingStandardsIgnoreLine
+
 		$args = $this->build_auth_request_with_address( $order );
 
 		WSUWS_WooCommerce_Payment_Gateway::log( 'Request arguments for order ' . $order->get_order_number() . ':' . print_r( $args, true ) ); // @codingStandardsIgnoreLine
 
 		$response = $client->AuthRequestWithAddress( $args );
 
+		WSUWS_WooCommerce_Payment_Gateway::log( 'Response received: ' . print_r( $response, true ) ); // @codingStandardsIgnoreLine
+
 		// @codingStandardsIgnoreStart
 		$result = array(
-			'return_code' => $response->AuthRequestWithAddressResponse->RequestReturnCode,
-			'return_message' => $response->AuthRequestWithAddressResponse->RequestReturnMessage,
-			'request_guid' => $response->AuthRequestWithAddressResponse->RequestGUID,
-			'redirect_url' => $response->AuthRequestWithAddressResponse->WebPageURLAndGUID,
+			'return_code' => $response->AuthRequestWithAddressResult->RequestReturnCode,
+			'return_message' => $response->AuthRequestWithAddressResult->RequestReturnMessage,
+			'request_guid' => $response->AuthRequestWithAddressResult->RequestGUID,
+			'redirect_url' => $response->AuthRequestWithAddressResult->WebPageURLAndGUID,
 		);
 		// @codingStandardsIgnoreEnd
 
@@ -84,13 +88,13 @@ class WSUWS_Gateway_Request {
 	 */
 	protected function build_auth_request_with_address( $order ) {
 		$request = array(
-			'MerchantID' => '',
+			'MerchantID' => apply_filters( 'wsuws_gateway_merchant_id', '' ),
 			'AuthorizationAmount' => $order->order_total, // decimal, required
-			'OneStepTranType' => '',
-			'ApplicationIDPrimary' => '',
+			'OneStepTranType' => apply_filters( 'wsuws_gateway_trantype', '' ),
+			'ApplicationIDPrimary' => apply_filters( 'wsuws_gateway_application_id', '' ),
 			'ReturnURL' => $this->notify_url,
 			'AuthorizationAttemptLimit' => 3,
-			'EmailAddressDeptContact' => 'jeremy.felt@wsu.edu',
+			'EmailAddressDeptContact' => apply_filters( 'wsuws_gateway_contact_email', '' ),
 			'BillingAddress' => $order->billing_address_1 . ' ' . $order->billing_address_2,
 			'BillingState' => $order->billing_state,
 			'BillingZipCode' => $order->billing_postcode,
