@@ -13,15 +13,33 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-// The core plugin class.
-require dirname( __FILE__ ) . '/includes/class-wsuws-woocommerce-payment-gateway.php';
-
-add_action( 'after_setup_theme', 'WSUWS_WooCommerce_Payment_Gateway' );
+add_action( 'plugins_loaded', 'wsuwp_load_wsuws_woocommerce_payment_gateway' );
 /**
- * Start things up.
+ * Loads the WSUWS payment gateway class, which extends WooCommerce.
  *
- * @return \WSUWS_WooCommerce_Payment_Gateway
+ * @since 0.0.1
  */
-function WSUWS_WooCommerce_Payment_Gateway() {
-	return WSUWS_WooCommerce_Payment_Gateway::get_instance();
+function wsuwp_load_wsuws_woocommerce_payment_gateway() {
+	if ( class_exists( 'WC_Payment_Gateway' ) ) {
+		require dirname( __FILE__ ) . '/includes/class-wsuws-woocommerce-payment-gateway.php';
+		add_filter( 'woocommerce_payment_gateways', 'wsuwp_add_wsuws_woocommerce_payment_gateway' );
+
+		// Register the gateway's response handler.
+		include_once dirname( __FILE__ ) . '/includes/class-wsuws-gateway-response.php';
+		new WSUWS_Gateway_Response();
+	}
+}
+
+/**
+ * Adds the WSUWS payment gateway to the list of offered payment gateways.
+ *
+ * @since 0.0.1
+ *
+ * @param array $methods
+ *
+ * @return array
+ */
+function wsuwp_add_wsuws_woocommerce_payment_gateway( $methods ) {
+	$methods[] = 'WSUWS_WooCommerce_Payment_Gateway';
+	return $methods;
 }
