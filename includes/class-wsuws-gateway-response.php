@@ -50,7 +50,7 @@ class WSUWS_Gateway_Response {
 
 		if ( 0 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
 			// Auth was successful.
-		} elseif( 9 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
+		} elseif ( 9 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
 			// Invalid authorization ID.
 		}
 
