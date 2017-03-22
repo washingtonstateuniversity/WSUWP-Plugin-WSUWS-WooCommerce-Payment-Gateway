@@ -34,6 +34,13 @@ class WSUWS_Gateway_Response {
 		}
 
 		$auth_id = $_GET['GUID']; // @codingStandardsIgnoreLine
+		$auth_array = explode( '-', $auth_id );
+
+		if ( 36 !== strlen( $auth_id ) || 5 !== count( $auth_array ) ) {
+			WSUWS_WooCommerce_Payment_Gateway::log( 'Received an invalid auth GUID: ' . sanitize_key( $auth_id ) );
+			wp_safe_redirect( esc_url( get_home_url() ) );
+			exit;
+		}
 
 		$client = new SoapClient( WSUWS_WooCommerce_Payment_Gateway::$csp_wsdl_url );
 
