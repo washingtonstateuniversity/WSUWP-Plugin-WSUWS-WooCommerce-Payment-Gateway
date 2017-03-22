@@ -11,6 +11,15 @@ class WSUWS_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 	public static $log = '';
 
 	/**
+	 * The WSDL URL used to make SOAP requests for CC authorization.
+	 *
+	 * @since 0.0.4
+	 *
+	 * @var string
+	 */
+	public static $csp_wsdl_url = 'https://test-ewebservice.wsu.edu/CentralPaymentSite_WS/service.asmx?wsdl';
+
+	/**
 	 * WSUWS_WooCommerce_Payment_Gateway constructor.
 	 *
 	 * @since 0.0.1
