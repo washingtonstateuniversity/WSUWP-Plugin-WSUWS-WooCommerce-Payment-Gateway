@@ -27,6 +27,21 @@ class WSUWS_Gateway_Response {
 	 */
 	public function check_response() {
 		WSUWS_WooCommerce_Payment_Gateway::log( 'Received a response callback from webservice gateway: ' . esc_html( print_r( $_POST, true ) ) ); // @codingStandardsIgnoreLine
+
+		if ( ! isset( $_GET['GUID'] ) ) { // @codingStandardsIgnoreLine
+			wp_safe_redirect( esc_url( get_home_url() ) );
+			exit;
+		}
+
+		$auth_id = $_GET['GUID']; // @codingStandardsIgnoreLine
+
+		$client = new SoapClient( WSUWS_WooCommerce_Payment_Gateway::$csp_wsdl_url );
+
+		$response = $client->ReadPaymentAuthorization( array(
+			'PaymentAuthorizationGUID' => sanitize_key( $auth_id ),
+		) );
+
+		WSUWS_WooCommerce_Payment_Gateway::log( 'ReadPaymentAuthorization Response received: ' . print_r( $response, true ) ); // @codingStandardsIgnoreLine
 		exit;
 	}
 }
