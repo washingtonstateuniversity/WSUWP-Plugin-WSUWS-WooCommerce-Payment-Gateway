@@ -14,15 +14,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WSUWS_Gateway_Request {
 
 	/**
-	 * The WSDL URL used to make SOAP requests for CC authorization.
-	 *
-	 * @since 0.0.1
-	 *
-	 * @var string
-	 */
-	private $csp_wsdl_url = 'https://test-ewebservice.wsu.edu/CentralPaymentSite_WS/service.asmx?wsdl';
-
-	/**
 	 * URL to be used for callback when a request is complete.
 	 *
 	 * @since 0.0.1
@@ -51,7 +42,7 @@ class WSUWS_Gateway_Request {
 	 * @return string URL to redirect the customer to when an order is placed.
 	 */
 	public function get_request_url( $order ) {
-		$client = new SoapClient( $this->csp_wsdl_url );
+		$client = new SoapClient( WSUWS_WooCommerce_Payment_Gateway::$csp_wsdl_url );
 
 		WSUWS_WooCommerce_Payment_Gateway::log( 'Client created: ' . print_r( $client, true ) ); // @codingStandardsIgnoreLine
 
