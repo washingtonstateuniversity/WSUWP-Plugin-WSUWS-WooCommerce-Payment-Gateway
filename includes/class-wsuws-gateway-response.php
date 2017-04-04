@@ -44,6 +44,7 @@ class WSUWS_Gateway_Response {
 
 		$args = array(
 			'post_type' => 'shop_order',
+			'post_status' => 'wc-pending',
 			'meta_query' => array(
 				'key' => 'wsuws_request_guid',
 				'value' => sanitize_key( $auth_id ),
