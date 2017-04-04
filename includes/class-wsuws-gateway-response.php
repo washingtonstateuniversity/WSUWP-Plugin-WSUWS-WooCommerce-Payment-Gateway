@@ -34,12 +34,27 @@ class WSUWS_Gateway_Response {
 		}
 
 		$auth_id = $_GET['GUID']; // @codingStandardsIgnoreLine
+		$auth_array = explode( '-', $auth_id );
+
+		if ( 36 !== strlen( $auth_id ) || 5 !== count( $auth_array ) ) {
+			WSUWS_WooCommerce_Payment_Gateway::log( 'Received an invalid auth GUID: ' . sanitize_key( $auth_id ) );
+			wp_safe_redirect( esc_url( get_home_url() ) );
+			exit;
+		}
 
 		$client = new SoapClient( WSUWS_WooCommerce_Payment_Gateway::$csp_wsdl_url );
 
 		$response = $client->ReadPaymentAuthorization( array(
 			'PaymentAuthorizationGUID' => sanitize_key( $auth_id ),
 		) );
+
+		// @codingStandardsIgnoreStart
+		if ( 0 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
+			// Auth was successful.
+		} elseif ( 9 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
+			// Invalid authorization ID.
+		}
+		// @codingStandardsIgnoreEnd
 
 		WSUWS_WooCommerce_Payment_Gateway::log( 'ReadPaymentAuthorization Response received: ' . print_r( $response, true ) ); // @codingStandardsIgnoreLine
 		exit;

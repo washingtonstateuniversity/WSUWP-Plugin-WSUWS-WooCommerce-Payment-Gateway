@@ -54,14 +54,12 @@ class WSUWS_Gateway_Request {
 
 		WSUWS_WooCommerce_Payment_Gateway::log( 'Response received: ' . print_r( $response, true ) ); // @codingStandardsIgnoreLine
 
-		// @codingStandardsIgnoreStart
 		$result = array(
 			'return_code' => $response->AuthRequestWithAddressResult->RequestReturnCode,
 			'return_message' => $response->AuthRequestWithAddressResult->RequestReturnMessage,
 			'request_guid' => $response->AuthRequestWithAddressResult->RequestGUID,
 			'redirect_url' => $response->AuthRequestWithAddressResult->WebPageURLAndGUID,
 		);
-		// @codingStandardsIgnoreEnd
 
 		WSUWS_WooCommerce_Payment_Gateway::log( 'Response from web service for order ' . $order->get_order_number() . ':' . print_r( $result, true ) ); // @codingStandardsIgnoreLine
 
