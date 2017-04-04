@@ -61,7 +61,7 @@ class WSUWS_Gateway_Request {
 			'redirect_url' => $response->AuthRequestWithAddressResult->WebPageURLAndGUID,
 		);
 
-		if ( ! empty( $result[ 'request_guid'] ) ) {
+		if ( ! empty( $result['request_guid'] ) ) {
 			update_post_meta( $order->id, 'wsuws_request_guid', sanitize_key( $result['request_guid'] ) );
 		}
 
