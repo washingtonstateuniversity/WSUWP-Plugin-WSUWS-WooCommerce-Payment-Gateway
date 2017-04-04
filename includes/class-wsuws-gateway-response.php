@@ -48,11 +48,13 @@ class WSUWS_Gateway_Response {
 			'PaymentAuthorizationGUID' => sanitize_key( $auth_id ),
 		) );
 
+		// @codingStandardsIgnoreStart
 		if ( 0 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
 			// Auth was successful.
 		} elseif ( 9 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
 			// Invalid authorization ID.
 		}
+		// @codingStandardsIgnoreEnd
 
 		WSUWS_WooCommerce_Payment_Gateway::log( 'ReadPaymentAuthorization Response received: ' . print_r( $response, true ) ); // @codingStandardsIgnoreLine
 		exit;
