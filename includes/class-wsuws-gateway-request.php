@@ -61,6 +61,10 @@ class WSUWS_Gateway_Request {
 			'redirect_url' => $response->AuthRequestWithAddressResult->WebPageURLAndGUID,
 		);
 
+		if ( ! empty( $result['request_guid'] ) ) {
+			update_post_meta( $order->id, 'wsuws_request_guid', sanitize_key( $result['request_guid'] ) );
+		}
+
 		WSUWS_WooCommerce_Payment_Gateway::log( 'Response from web service for order ' . $order->get_order_number() . ':' . print_r( $result, true ) ); // @codingStandardsIgnoreLine
 
 		return $result['redirect_url'];
