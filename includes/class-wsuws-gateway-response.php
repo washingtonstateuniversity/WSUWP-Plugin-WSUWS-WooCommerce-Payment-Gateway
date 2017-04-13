@@ -74,19 +74,16 @@ class WSUWS_Gateway_Response {
 		// @codingStandardsIgnoreStart
 		if ( 0 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
 			// Set authorized order to "processing" until shipment.
-			$order->update_status( 'processing', 'Payment authorized.' );
+			$order->update_status( 'on-hold', 'Payment authorized.' );
+			wc_reduce_stock_levels( $order->ID );
 
 			// Empty the customer's cart.
 			wc()->cart->empty_cart();
-
-			wp_safe_redirect( $order->get_checkout_order_received_url() );
-			exit;
 		} elseif ( 9 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
 			// Invalid authorization ID.
 		}
 		// @codingStandardsIgnoreEnd
 
 		WSUWS_WooCommerce_Payment_Gateway::log( 'ReadPaymentAuthorization Response received: ' . print_r( $response, true ) ); // @codingStandardsIgnoreLine
-		exit;
 	}
 }
