@@ -73,7 +73,7 @@ class WSUWS_Gateway_Response {
 
 		// @codingStandardsIgnoreStart
 		if ( 0 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
-			// Set authorized order to "processing" until shipment.
+			// Set authorized order to "on-hold" until charged and shipped.
 			$order->update_status( 'on-hold', 'Payment authorized.' );
 			wc_reduce_stock_levels( $order->ID );
 
