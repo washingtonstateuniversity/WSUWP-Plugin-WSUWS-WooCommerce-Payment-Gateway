@@ -33,7 +33,6 @@ class WSUWS_Gateway_Response {
 		$order = wc_get_order( $order_id );
 
 		if ( ! isset( $_GET['GUID'] ) ) { // @codingStandardsIgnoreLine
-			$order->update_status( 'on-hold', 'No valid authorization ID returned.' );
 			return;
 		}
 
