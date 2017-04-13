@@ -58,7 +58,6 @@ class WSUWS_Gateway_Response {
 			'PaymentAuthorizationGUID' => sanitize_key( $auth_id ),
 		) );
 
-		// @codingStandardsIgnoreStart
 		if ( 0 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
 			// Set authorized order to "on-hold" until charged and shipped.
 			$order->update_status( 'on-hold', 'Payment authorized.' );
@@ -67,9 +66,8 @@ class WSUWS_Gateway_Response {
 			// Empty the customer's cart.
 			wc()->cart->empty_cart();
 		} elseif ( 9 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
-			// Invalid authorization ID.
+			$order->update_status( 'on-hold', 'Payment authorization invalid.' );
 		}
-		// @codingStandardsIgnoreEnd
 
 		WSUWS_WooCommerce_Payment_Gateway::log( 'ReadPaymentAuthorization Response received: ' . print_r( $response, true ) ); // @codingStandardsIgnoreLine
 	}
