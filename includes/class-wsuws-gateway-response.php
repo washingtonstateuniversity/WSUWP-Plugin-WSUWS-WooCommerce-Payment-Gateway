@@ -84,8 +84,10 @@ class WSUWS_Gateway_Response {
 				wc()->cart->empty_cart();
 			} elseif ( 1 === $response->ReadPaymentAuthorizationResult->AuthorizationCPMReturnCode ) {
 				// Bank error, card declined, etc...
+				wc_add_notice( 'An error occured when processing payment.', 'error' );
 			} else {
 				// System error.
+				wc_add_notice( 'A system error occurde when processing payment.', 'error' );
 			}
 		} elseif ( 2 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
 			WSUWS_WooCommerce_Payment_Gateway::log( 'GUID is already closed: ' . sanitize_key( $auth_id ) );
