@@ -30,27 +30,29 @@ class WSUWS_Gateway_Response {
 	public function check_response( $order_id ) {
 		WSUWS_WooCommerce_Payment_Gateway::log( 'Received a response callback from webservice gateway: ' . esc_html( print_r( $_POST, true ) ) ); // @codingStandardsIgnoreLine
 
+		$order = wc_get_order( $order_id );
+
 		if ( ! isset( $_GET['GUID'] ) ) { // @codingStandardsIgnoreLine
-			wp_safe_redirect( esc_url( get_home_url() ) );
-			exit;
+			$order->update_status( 'on-hold', 'No valid authorization ID returned.' );
+			return;
 		}
 
 		$auth_id = $_GET['GUID']; // @codingStandardsIgnoreLine
 		$auth_array = explode( '-', $auth_id );
 
 		if ( 36 !== strlen( $auth_id ) || 5 !== count( $auth_array ) ) {
+			$order->update_status( 'on-hold', 'An improperly formatted authorization ID was received.' );
 			WSUWS_WooCommerce_Payment_Gateway::log( 'Received an invalid auth GUID: ' . sanitize_key( $auth_id ) );
-			return false;
+			return;
 		}
 
 		$verify_guid = get_post_meta( $order_id, 'wsuws_request_guid', true );
 
 		if ( $auth_id !== $verify_guid ) {
+			$order->update_status( 'on-hold', 'The auth GUID did not match the original order.' );
 			WSUWS_WooCommerce_Payment_Gateway::log( 'Stored GUID did not match response GUID: ' . sanitize_key( $auth_id ) . ' | ' . sanitize_key( $verify_guid ) );
-			return false;
+			return;
 		}
-
-		$order = wc_get_order( $order_id );
 
 		$client = new SoapClient( WSUWS_WooCommerce_Payment_Gateway::$csp_wsdl_url );
 
