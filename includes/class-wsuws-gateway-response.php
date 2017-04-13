@@ -17,75 +17,60 @@ class WSUWS_Gateway_Response {
 	 * @since 0.0.1
 	 */
 	public function __construct() {
-		add_action( 'woocommerce_api_wsuws_gateway_response', array( $this, 'check_response' ) );
+		add_action( 'woocommerce_thankyou_wsuws_gateway', array( $this, 'check_response' ) );
 	}
 
 	/**
 	 * Checks the response from the WSU webservice gateway's use of our callback.
 	 *
 	 * @since 0.0.1
+	 *
+	 * @param int $order_id
 	 */
-	public function check_response() {
+	public function check_response( $order_id ) {
 		WSUWS_WooCommerce_Payment_Gateway::log( 'Received a response callback from webservice gateway: ' . esc_html( print_r( $_POST, true ) ) ); // @codingStandardsIgnoreLine
 
+		$order = wc_get_order( $order_id );
+
 		if ( ! isset( $_GET['GUID'] ) ) { // @codingStandardsIgnoreLine
-			wp_safe_redirect( esc_url( get_home_url() ) );
-			exit;
+			$order->update_status( 'on-hold', 'No valid authorization ID returned.' );
+			return;
 		}
 
 		$auth_id = $_GET['GUID']; // @codingStandardsIgnoreLine
 		$auth_array = explode( '-', $auth_id );
 
 		if ( 36 !== strlen( $auth_id ) || 5 !== count( $auth_array ) ) {
+			$order->update_status( 'on-hold', 'An improperly formatted authorization ID was received.' );
 			WSUWS_WooCommerce_Payment_Gateway::log( 'Received an invalid auth GUID: ' . sanitize_key( $auth_id ) );
-			wp_safe_redirect( esc_url( get_home_url() ) );
-			exit;
+			return;
 		}
 
-		$args = array(
-			'post_type' => 'shop_order',
-			'meta_query' => array(
-				'key' => 'wsuws_request_guid',
-				'value' => sanitize_key( $auth_id ),
-			),
-		);
-		$order_query = new WP_Query( $args );
+		$verify_guid = get_post_meta( $order_id, 'wsuws_request_guid', true );
 
-		$order = false;
-		if ( $order_query->have_posts() ) {
-			$order_query->the_post();
-			$order = get_post();
-		}
-		wp_reset_postdata();
-
-		if ( ! $order ) {
-			WSUWS_WooCommerce_Payment_Gateway::log( 'No valid order found for this GUID: ' . sanitize_key( $auth_id ) );
-			wp_safe_redirect( esc_url( get_home_url() ) );
+		if ( $auth_id !== $verify_guid ) {
+			$order->update_status( 'on-hold', 'The auth GUID did not match the original order.' );
+			WSUWS_WooCommerce_Payment_Gateway::log( 'Stored GUID did not match response GUID: ' . sanitize_key( $auth_id ) . ' | ' . sanitize_key( $verify_guid ) );
+			return;
 		}
 
-		$order = wc_get_order( $order );
 		$client = new SoapClient( WSUWS_WooCommerce_Payment_Gateway::$csp_wsdl_url );
 
 		$response = $client->ReadPaymentAuthorization( array(
 			'PaymentAuthorizationGUID' => sanitize_key( $auth_id ),
 		) );
 
-		// @codingStandardsIgnoreStart
 		if ( 0 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
-			// Set authorized order to "processing" until shipment.
-			$order->update_status( 'processing', 'Payment authorized.' );
+			// Set authorized order to "on-hold" until charged and shipped.
+			$order->update_status( 'on-hold', 'Payment authorized.' );
+			wc_reduce_stock_levels( $order->ID );
 
 			// Empty the customer's cart.
 			wc()->cart->empty_cart();
-
-			wp_safe_redirect( $order->get_checkout_order_received_url() );
-			exit;
 		} elseif ( 9 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
-			// Invalid authorization ID.
+			$order->update_status( 'on-hold', 'Payment authorization invalid.' );
 		}
-		// @codingStandardsIgnoreEnd
 
 		WSUWS_WooCommerce_Payment_Gateway::log( 'ReadPaymentAuthorization Response received: ' . print_r( $response, true ) ); // @codingStandardsIgnoreLine
-		exit;
 	}
 }
