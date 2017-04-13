@@ -28,8 +28,6 @@ class WSUWS_Gateway_Response {
 	 * @param int $order_id
 	 */
 	public function check_response( $order_id ) {
-		WSUWS_WooCommerce_Payment_Gateway::log( 'Received a response callback from webservice gateway: ' . esc_html( print_r( $_POST, true ) ) ); // @codingStandardsIgnoreLine
-
 		$order = wc_get_order( $order_id );
 
 		// If a GUID is not set, no response can be checked.
