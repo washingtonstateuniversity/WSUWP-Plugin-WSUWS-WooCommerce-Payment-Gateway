@@ -24,8 +24,10 @@ class WSUWS_Gateway_Response {
 	 * Checks the response from the WSU webservice gateway's use of our callback.
 	 *
 	 * @since 0.0.1
+	 *
+	 * @param int $order_id
 	 */
-	public function check_response() {
+	public function check_response( $order_id ) {
 		WSUWS_WooCommerce_Payment_Gateway::log( 'Received a response callback from webservice gateway: ' . esc_html( print_r( $_POST, true ) ) ); // @codingStandardsIgnoreLine
 
 		if ( ! isset( $_GET['GUID'] ) ) { // @codingStandardsIgnoreLine
@@ -38,33 +40,18 @@ class WSUWS_Gateway_Response {
 
 		if ( 36 !== strlen( $auth_id ) || 5 !== count( $auth_array ) ) {
 			WSUWS_WooCommerce_Payment_Gateway::log( 'Received an invalid auth GUID: ' . sanitize_key( $auth_id ) );
-			wp_safe_redirect( esc_url( get_home_url() ) );
-			exit;
+			return false;
 		}
 
-		$args = array(
-			'post_type' => 'shop_order',
-			'post_status' => 'wc-pending',
-			'meta_query' => array(
-				'key' => 'wsuws_request_guid',
-				'value' => sanitize_key( $auth_id ),
-			),
-		);
-		$order_query = new WP_Query( $args );
+		$verify_guid = get_post_meta( $order_id, 'wsuws_request_guid', true );
 
-		$order = false;
-		if ( $order_query->have_posts() ) {
-			$order_query->the_post();
-			$order = get_post();
-		}
-		wp_reset_postdata();
-
-		if ( ! $order ) {
-			WSUWS_WooCommerce_Payment_Gateway::log( 'No valid order found for this GUID: ' . sanitize_key( $auth_id ) );
-			wp_safe_redirect( esc_url( get_home_url() ) );
+		if ( $auth_id !== $verify_guid ) {
+			WSUWS_WooCommerce_Payment_Gateway::log( 'Stored GUID did not match response GUID: ' . sanitize_key( $auth_id ) . ' | ' . sanitize_key( $verify_guid ) );
+			return false;
 		}
 
-		$order = wc_get_order( $order );
+		$order = wc_get_order( $order_id );
+
 		$client = new SoapClient( WSUWS_WooCommerce_Payment_Gateway::$csp_wsdl_url );
 
 		$response = $client->ReadPaymentAuthorization( array(
