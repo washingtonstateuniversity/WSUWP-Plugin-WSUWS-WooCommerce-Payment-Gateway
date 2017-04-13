@@ -28,17 +28,20 @@ class WSUWS_Gateway_Response {
 	 * @param int $order_id
 	 */
 	public function check_response( $order_id ) {
-		WSUWS_WooCommerce_Payment_Gateway::log( 'Received a response callback from webservice gateway: ' . esc_html( print_r( $_POST, true ) ) ); // @codingStandardsIgnoreLine
-
 		$order = wc_get_order( $order_id );
 
-		// If a GUID is not set, no response can be checked.
 		if ( ! isset( $_GET['GUID'] ) ) { // @codingStandardsIgnoreLine
-			return;
+			// Payment has not been attempted via Cybersource. (back button?)
+			if ( 'pending' === $order->get_status() ) {
+				wc_add_notice( 'Payment has not been completed. Please try again.', 'error' );
+				return;
+			} else {
+				return;
+			}
 		}
 
 		// If an order is past the point of authorization, then we should not be running this again.
-		$skip_order_status = array( 'on-hold', 'completed', 'cancelled', 'refunded', 'failed' );
+		$skip_order_status = array( 'on-hold', 'processing', 'completed', 'cancelled', 'refunded', 'failed' );
 		if ( in_array( $order->get_status(), $skip_order_status, true ) ) {
 			return;
 		}
