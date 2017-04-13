@@ -81,6 +81,7 @@ class WSUWS_Gateway_Request {
 			'BillingState' => $order->billing_state,
 			'BillingZipCode' => $order->billing_postcode,
 			'BillingCountry' => $order->billing_country,
+			'PostBackURL' => esc_url( get_home_url( get_current_blog_id(), '/this-value-is-useless-but-we-have-to-include-it-anyway/' ) ),
 		);
 
 		return $request;
