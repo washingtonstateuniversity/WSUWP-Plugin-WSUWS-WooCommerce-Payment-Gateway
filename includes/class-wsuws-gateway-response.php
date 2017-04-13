@@ -17,7 +17,7 @@ class WSUWS_Gateway_Response {
 	 * @since 0.0.1
 	 */
 	public function __construct() {
-		add_action( 'woocommerce_api_wsuws_gateway_response', array( $this, 'check_response' ) );
+		add_action( 'woocommerce_thankyou_wsuws_gateway', array( $this, 'check_response' ) );
 	}
 
 	/**
