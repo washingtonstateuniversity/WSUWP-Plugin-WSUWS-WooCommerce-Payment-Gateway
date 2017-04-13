@@ -32,7 +32,14 @@ class WSUWS_Gateway_Response {
 
 		$order = wc_get_order( $order_id );
 
+		// If a GUID is not set, no response can be checked.
 		if ( ! isset( $_GET['GUID'] ) ) { // @codingStandardsIgnoreLine
+			return;
+		}
+
+		// If an order is past the point of authorization, then we should not be running this again.
+		$skip_order_status = array( 'on-hold', 'completed', 'cancelled', 'refunded', 'failed' );
+		if ( in_array( $order->get_status(), $skip_order_status, true ) ) {
 			return;
 		}
 
@@ -40,7 +47,6 @@ class WSUWS_Gateway_Response {
 		$auth_array = explode( '-', $auth_id );
 
 		if ( 36 !== strlen( $auth_id ) || 5 !== count( $auth_array ) ) {
-			$order->update_status( 'on-hold', 'An improperly formatted authorization ID was received.' );
 			WSUWS_WooCommerce_Payment_Gateway::log( 'Received an invalid auth GUID: ' . sanitize_key( $auth_id ) );
 			return;
 		}
