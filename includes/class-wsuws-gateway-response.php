@@ -60,17 +60,34 @@ class WSUWS_Gateway_Response {
 			'PaymentAuthorizationGUID' => sanitize_key( $auth_id ),
 		) );
 
-		if ( 0 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
-			// Set authorized order to "on-hold" until charged and shipped.
-			$order->update_status( 'on-hold', 'Payment authorized.' );
-			wc_reduce_stock_levels( $order->ID );
-
-			// Empty the customer's cart.
-			wc()->cart->empty_cart();
-		} elseif ( 9 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
-			$order->update_status( 'on-hold', 'Payment authorization invalid.' );
-		}
-
 		WSUWS_WooCommerce_Payment_Gateway::log( 'ReadPaymentAuthorization Response received: ' . print_r( $response, true ) ); // @codingStandardsIgnoreLine
+
+		/**
+		 * Handle the possible response return codes from the payment authorization:
+		 *
+		 * 0 -> Web service call was successful.
+		 * 2 -> GUID is already closed.
+		 * 9 (else) -> Web service call failed. (Likely an invalid GUID)
+		 */
+		if ( 0 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
+			if ( 0 === $response->ReadPaymentAuthorizationResult->AuthorizationCPMReturnCode ) {
+				// Set authorized order to "on-hold" until charged and shipped.
+				$order->update_status( 'on-hold', 'Payment authorized.' );
+				wc_reduce_stock_levels( $order->ID );
+
+				// Empty the customer's cart.
+				wc()->cart->empty_cart();
+			} elseif ( 1 === $response->ReadPaymentAuthorizationResult->AuthorizationCPMReturnCode ) {
+				// Bank error, card declined, etc...
+			} else {
+				// System error.
+			}
+		} elseif ( 2 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
+			WSUWS_WooCommerce_Payment_Gateway::log( 'GUID is already closed: ' . sanitize_key( $auth_id ) );
+			return;
+		} else {
+			WSUWS_WooCommerce_Payment_Gateway::log( 'Web service call failed. GUID: ' . sanitize_key( $auth_id ) . ' ReadReturnCode: ' . absint( $response->ReadPaymentAuthorizationResult->ReadReturnCode ) );
+			return;
+		}
 	}
 }
