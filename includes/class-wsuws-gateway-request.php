@@ -14,22 +14,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WSUWS_Gateway_Request {
 
 	/**
-	 * URL to be used for callback when a request is complete.
-	 *
-	 * @since 0.0.1
-	 *
-	 * @var string
-	 */
-	protected $notify_url;
-
-	/**
 	 * WSUWS_Gateway_Request constructor.
 	 *
 	 * @since 0.0.1
 	 */
-	public function __construct() {
-		$this->notify_url = WC()->api_request_url( 'wsuws_gateway_response' );
-	}
+	public function __construct() {}
 
 	/**
 	 * Retrieves the URL used to redirect a custom to the WSU webservice gateway
@@ -85,14 +74,13 @@ class WSUWS_Gateway_Request {
 			'AuthorizationAmount' => $order->order_total, // decimal, required
 			'OneStepTranType' => apply_filters( 'wsuws_gateway_trantype', '' ),
 			'ApplicationIDPrimary' => apply_filters( 'wsuws_gateway_application_id', '' ),
-			'ReturnURL' => $this->notify_url,
+			'ReturnURL' => $order->get_checkout_order_received_url(),
 			'AuthorizationAttemptLimit' => 3,
 			'EmailAddressDeptContact' => apply_filters( 'wsuws_gateway_contact_email', '' ),
 			'BillingAddress' => $order->billing_address_1 . ' ' . $order->billing_address_2,
 			'BillingState' => $order->billing_state,
 			'BillingZipCode' => $order->billing_postcode,
 			'BillingCountry' => $order->billing_country,
-			'PostBackURL' => $this->notify_url,
 		);
 
 		return $request;
