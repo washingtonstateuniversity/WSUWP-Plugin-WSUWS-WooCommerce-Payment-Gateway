@@ -31,6 +31,7 @@ class WSUWS_Gateway_Response {
 
 		// Invalid order.
 		if ( false === $order ) {
+			WSUWS_WooCommerce_Payment_Gateway::log( 'Order ' . $order_id . ' does not exist.' );
 			return;
 		}
 
@@ -41,6 +42,7 @@ class WSUWS_Gateway_Response {
 		$auth_array = explode( '-', $auth_id );
 
 		if ( 36 !== strlen( $auth_id ) || 5 !== count( $auth_array ) ) {
+			WSUWS_WooCommerce_Payment_Gateway::log( 'Invalid GUID: ' . $auth_id );
 			if ( 'pending' === $order->get_status() ) {
 				// Order payment still needs to be collected.
 				return;
