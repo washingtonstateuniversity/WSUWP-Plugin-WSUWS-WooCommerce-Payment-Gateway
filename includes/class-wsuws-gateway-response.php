@@ -88,6 +88,8 @@ class WSUWS_Gateway_Response {
 
 				// Empty the customer's cart.
 				wc()->cart->empty_cart();
+				wp_safe_redirect( esc_url( $order->get_checkout_order_received_url() ) );
+				exit;
 			} elseif ( 1 === $response->ReadPaymentAuthorizationResult->AuthorizationCPMReturnCode ) {
 				// Bank error, card declined, etc...
 				wc_add_notice( 'An error occured when processing payment.', 'error' );
