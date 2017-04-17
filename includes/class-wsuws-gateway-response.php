@@ -35,8 +35,8 @@ class WSUWS_Gateway_Response {
 		}
 
 		$auth_id = '';
-		if ( isset( $_GET['GUID'] ) ) {
-			$auth_id = $_GET['GUID'];
+		if ( isset( $_GET['GUID'] ) ) { // @codingStandardsIgnoreLine
+			$auth_id = $_GET['GUID']; // @codingStandardsIgnoreLine
 		}
 		$auth_array = explode( '-', $auth_id );
 
