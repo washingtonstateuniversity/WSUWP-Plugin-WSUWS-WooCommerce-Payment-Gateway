@@ -77,10 +77,6 @@ class WSUWS_Gateway_Request {
 			'ReturnURL' => $order->get_checkout_payment_url(),
 			'AuthorizationAttemptLimit' => 3,
 			'EmailAddressDeptContact' => apply_filters( 'wsuws_gateway_contact_email', '' ),
-			'BillingAddress' => $order->billing_address_1 . ' ' . $order->billing_address_2,
-			'BillingState' => $order->billing_state,
-			'BillingZipCode' => $order->billing_postcode,
-			'BillingCountry' => $order->billing_country,
 			'CancelURL' => $order->get_cancel_order_url(),
 			'PostBackURL' => esc_url( get_home_url( get_current_blog_id(), '/this-value-is-useless-but-we-have-to-include-it-anyway/' ) ),
 		);
