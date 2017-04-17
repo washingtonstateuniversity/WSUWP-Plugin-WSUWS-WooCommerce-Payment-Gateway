@@ -17,7 +17,7 @@ class WSUWS_Gateway_Response {
 	 * @since 0.0.1
 	 */
 	public function __construct() {
-		add_action( 'woocommerce_review_order_before_payment', array( $this, 'check_response' ) );
+		add_action( 'before_woocommerce_pay', array( $this, 'check_response' ) );
 	}
 
 	/**
