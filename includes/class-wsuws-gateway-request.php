@@ -33,30 +33,22 @@ class WSUWS_Gateway_Request {
 	public function get_request_url( $order ) {
 		$client = new SoapClient( WSUWS_WooCommerce_Payment_Gateway::$csp_wsdl_url );
 
-		WSUWS_WooCommerce_Payment_Gateway::log( 'Client created: ' . print_r( $client, true ) ); // @codingStandardsIgnoreLine
-
-		$args = $this->build_auth_request_with_address( $order );
+		$args = $this->build_auth_request( $order );
 
 		WSUWS_WooCommerce_Payment_Gateway::log( 'Request arguments for order ' . $order->get_order_number() . ':' . print_r( $args, true ) ); // @codingStandardsIgnoreLine
 
-		$response = $client->AuthRequestWithAddress( $args );
+		$response = $client->AuthRequest( $args );
 
 		WSUWS_WooCommerce_Payment_Gateway::log( 'Response received: ' . print_r( $response, true ) ); // @codingStandardsIgnoreLine
 
-		$result = array(
-			'return_code' => $response->AuthRequestWithAddressResult->RequestReturnCode,
-			'return_message' => $response->AuthRequestWithAddressResult->RequestReturnMessage,
-			'request_guid' => $response->AuthRequestWithAddressResult->RequestGUID,
-			'redirect_url' => $response->AuthRequestWithAddressResult->WebPageURLAndGUID,
-		);
+		$request_guid = $response->AuthRequestResult->RequestGUID;
+		$redirect_url = $response->AuthRequestResult->WebPageURLAndGUID;
 
-		if ( ! empty( $result['request_guid'] ) ) {
-			update_post_meta( $order->ID, 'wsuws_request_guid', sanitize_key( $result['request_guid'] ) );
+		if ( ! empty( $request_guid ) ) {
+			update_post_meta( $order->ID, 'wsuws_request_guid', sanitize_key( $request_guid ) );
 		}
 
-		WSUWS_WooCommerce_Payment_Gateway::log( 'Response from web service for order ' . $order->get_order_number() . ':' . print_r( $result, true ) ); // @codingStandardsIgnoreLine
-
-		return $result['redirect_url'];
+		return $redirect_url;
 	}
 
 	/**
@@ -68,7 +60,7 @@ class WSUWS_Gateway_Request {
 	 *
 	 * @return array
 	 */
-	protected function build_auth_request_with_address( $order ) {
+	protected function build_auth_request( $order ) {
 		$request = array(
 			'MerchantID' => apply_filters( 'wsuws_gateway_merchant_id', '' ),
 			'AuthorizationAmount' => $order->get_total(), // decimal, required

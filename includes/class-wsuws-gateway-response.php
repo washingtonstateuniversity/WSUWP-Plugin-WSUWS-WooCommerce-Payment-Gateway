@@ -42,6 +42,7 @@ class WSUWS_Gateway_Response {
 		$auth_array = explode( '-', $auth_id );
 
 		if ( 36 !== strlen( $auth_id ) || 5 !== count( $auth_array ) ) {
+			$order->add_order_note( 'An invalid GUID was used when attempting to check authorization.' );
 			WSUWS_WooCommerce_Payment_Gateway::log( 'Invalid GUID: ' . $auth_id );
 			if ( 'pending' === $order->get_status() ) {
 				// Order payment still needs to be collected.
@@ -94,9 +95,11 @@ class WSUWS_Gateway_Response {
 				exit;
 			} elseif ( 1 === $response->ReadPaymentAuthorizationResult->AuthorizationCPMReturnCode ) {
 				// Bank error, card declined, etc...
-				wc_add_notice( 'An error occured when processing payment.', 'error' );
+				$order->add_order_note( 'An error occurred when processing payment.' );
+				wc_add_notice( 'An error occurred when processing payment.', 'error' );
 			} else {
 				// System error.
+				$order->add_order_note( 'A system error occurred when processing payment.' );
 				wc_add_notice( 'A system error occured when processing payment.', 'error' );
 			}
 		} elseif ( 2 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
