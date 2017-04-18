@@ -127,6 +127,11 @@ class WSUWS_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 		WSUWS_WooCommerce_Payment_Gateway::log( 'CaptureRequest: ' . print_r( $request, true ) ); // @codingStandardsIgnoreLine
 		WSUWS_WooCommerce_Payment_Gateway::log( 'CaptureRequestResponse: ' . print_r( $response, true ) ); // @codingStandardsIgnoreLine
 
+		if ( 1 === $response->CaptureRequestResult->ResponseReturnCode ) {
+			$order->update_status( 'failed', 'Payment capture failed: ' . esc_html( $response->CaptureRequestResult->ResponseReturnMessage ) );
+			return;
+		}
+
 		$order->add_order_note( 'Payment was captured.' );
 	}
 }
