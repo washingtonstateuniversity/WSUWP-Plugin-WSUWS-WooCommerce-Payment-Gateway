@@ -77,7 +77,7 @@ class WSUWS_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 	 * @return array
 	 */
 	public function remove_checkout_billing_fields( $fields ) {
-		foreach( $fields['billing'] as $key => $value ) {
+		foreach ( $fields['billing'] as $key => $value ) {
 			unset( $fields['billing'][ $key ] );
 		}
 
