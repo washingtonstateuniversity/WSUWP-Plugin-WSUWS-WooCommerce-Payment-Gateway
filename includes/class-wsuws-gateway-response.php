@@ -56,7 +56,7 @@ class WSUWS_Gateway_Response {
 		$verify_guid = get_post_meta( $order_id, 'wsuws_request_guid', true );
 
 		if ( $auth_id !== $verify_guid ) {
-			$order->update_status( 'on-hold', 'The auth GUID did not match the original order.' );
+			$order->update_status( 'failed', 'The auth GUID did not match the original order.' );
 			WSUWS_WooCommerce_Payment_Gateway::log( 'Stored GUID did not match response GUID: ' . sanitize_key( $auth_id ) . ' | ' . sanitize_key( $verify_guid ) );
 			wp_safe_redirect( esc_url( $order->get_checkout_order_received_url() ) );
 			exit;
@@ -85,7 +85,7 @@ class WSUWS_Gateway_Response {
 		if ( 0 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
 			if ( 0 === $response->ReadPaymentAuthorizationResult->AuthorizationCPMReturnCode ) {
 				// Set authorized order to "on-hold" until charged and shipped.
-				$order->update_status( 'processing', 'Payment authorized.' );
+				$order->update_status( 'on-hold', 'Payment authorized.' );
 				wc_reduce_stock_levels( $order->ID );
 
 				// Empty the customer's cart.
