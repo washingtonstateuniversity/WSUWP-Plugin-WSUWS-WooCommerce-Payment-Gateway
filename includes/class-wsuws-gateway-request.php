@@ -71,7 +71,7 @@ class WSUWS_Gateway_Request {
 	protected function build_auth_request_with_address( $order ) {
 		$request = array(
 			'MerchantID' => apply_filters( 'wsuws_gateway_merchant_id', '' ),
-			'AuthorizationAmount' => $order->order_total, // decimal, required
+			'AuthorizationAmount' => $order->get_total(), // decimal, required
 			'OneStepTranType' => apply_filters( 'wsuws_gateway_trantype', '' ),
 			'ApplicationIDPrimary' => apply_filters( 'wsuws_gateway_application_id', '' ),
 			'ReturnURL' => $order->get_checkout_payment_url(),
