@@ -35,6 +35,7 @@ class WSUWS_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 		$this->title = $this->get_option( 'title' );
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+		add_filter( 'woocommerce_checkout_fields' , array( $this, 'remove_checkout_billing_fields' ) );
 	}
 
 	/**
@@ -63,6 +64,24 @@ class WSUWS_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 				'default' => '',
 			),
 		);
+	}
+
+	/**
+	 * Removes all of the billing address fields from the checkout process. We aren't
+	 * able to pass these on to Cybersource.
+	 *
+	 * @since 0.0.13
+	 *
+	 * @param array $fields
+	 *
+	 * @return array
+	 */
+	public function remove_checkout_billing_fields( $fields ) {
+		foreach ( $fields['billing'] as $key => $value ) {
+			unset( $fields['billing'][ $key ] );
+		}
+
+		return $fields;
 	}
 
 	/**
