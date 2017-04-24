@@ -87,7 +87,7 @@ class WSUWS_Gateway_Response {
 			if ( 0 === $response->ReadPaymentAuthorizationResult->AuthorizationCPMReturnCode ) {
 				// Set authorized order to "on-hold" until charged and shipped.
 				$order->update_status( 'on-hold', 'Payment authorized.' );
-				wc_reduce_stock_levels( $order->ID );
+				wc_reduce_stock_levels( $order->get_id() );
 
 				// Empty the customer's cart.
 				wc()->cart->empty_cart();

@@ -92,7 +92,7 @@ function capture_payment( $order_id ) {
 		return;
 	}
 
-	update_post_meta( $order->ID, 'wsuws_capture_guid', sanitize_key( $response->CaptureRequestResult->CaptureGUID ) );
+	update_post_meta( $order->get_id(), 'wsuws_capture_guid', sanitize_key( $response->CaptureRequestResult->CaptureGUID ) );
 
 	$order->add_order_note( 'Payment was captured.' );
 }
