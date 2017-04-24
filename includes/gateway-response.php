@@ -18,7 +18,7 @@ function check_response() {
 
 	// Invalid order.
 	if ( false === $order ) {
-		\WSUWS_WooCommerce_Payment_Gateway::log( 'Order ' . $order_id . ' does not exist.' );
+		\WSU\WSUWS_Woo_Gateway\Gateway\Payment_Gateway::log( 'Order ' . $order_id . ' does not exist.' );
 		return;
 	}
 
@@ -30,7 +30,7 @@ function check_response() {
 
 	if ( 36 !== strlen( $auth_id ) || 5 !== count( $auth_array ) ) {
 		$order->add_order_note( 'An invalid GUID was used when attempting to check authorization.' );
-		\WSUWS_WooCommerce_Payment_Gateway::log( 'Invalid GUID: ' . $auth_id );
+		\WSU\WSUWS_Woo_Gateway\Gateway\Payment_Gateway::log( 'Invalid GUID: ' . $auth_id );
 		if ( 'pending' === $order->get_status() ) {
 			// Order payment still needs to be collected.
 			return;
@@ -45,7 +45,7 @@ function check_response() {
 
 	if ( $auth_id !== $verify_guid ) {
 		$order->update_status( 'failed', 'The auth GUID did not match the original order.' );
-		\WSUWS_WooCommerce_Payment_Gateway::log( 'Stored GUID did not match response GUID: ' . sanitize_key( $auth_id ) . ' | ' . sanitize_key( $verify_guid ) );
+		\WSU\WSUWS_Woo_Gateway\Gateway\Payment_Gateway::log( 'Stored GUID did not match response GUID: ' . sanitize_key( $auth_id ) . ' | ' . sanitize_key( $verify_guid ) );
 		wp_safe_redirect( esc_url( $order->get_checkout_order_received_url() ) );
 		exit;
 	}
@@ -55,13 +55,13 @@ function check_response() {
 		exit;
 	}
 
-	$client = new \SoapClient( \WSUWS_WooCommerce_Payment_Gateway::$csp_wsdl_url );
+	$client = new \SoapClient( \WSU\WSUWS_Woo_Gateway\Gateway\Payment_Gateway::$csp_wsdl_url );
 
 	$response = $client->ReadPaymentAuthorization( array(
 		'PaymentAuthorizationGUID' => sanitize_key( $auth_id ),
 	) );
 
-	\WSUWS_WooCommerce_Payment_Gateway::log( 'ReadPaymentAuthorization Response received: ' . print_r( $response, true ) ); // @codingStandardsIgnoreLine
+	\WSU\WSUWS_Woo_Gateway\Gateway\Payment_Gateway::log( 'ReadPaymentAuthorization Response received: ' . print_r( $response, true ) ); // @codingStandardsIgnoreLine
 
 	/**
 	 * Handle the possible response return codes from the payment authorization:
@@ -90,11 +90,11 @@ function check_response() {
 			wc_add_notice( 'A system error occured when processing payment.', 'error' );
 		}
 	} elseif ( 2 === $response->ReadPaymentAuthorizationResult->ReadReturnCode ) {
-		\WSUWS_WooCommerce_Payment_Gateway::log( 'GUID is already closed: ' . sanitize_key( $auth_id ) );
+		\WSU\WSUWS_Woo_Gateway\Gateway\Payment_Gateway::log( 'GUID is already closed: ' . sanitize_key( $auth_id ) );
 		wp_safe_redirect( esc_url( $order->get_checkout_order_received_url() ) );
 		exit;
 	} else {
-		\WSUWS_WooCommerce_Payment_Gateway::log( 'Web service call failed. GUID: ' . sanitize_key( $auth_id ) . ' ReadReturnCode: ' . absint( $response->ReadPaymentAuthorizationResult->ReadReturnCode ) );
+		\WSU\WSUWS_Woo_Gateway\Gateway\Payment_Gateway::log( 'Web service call failed. GUID: ' . sanitize_key( $auth_id ) . ' ReadReturnCode: ' . absint( $response->ReadPaymentAuthorizationResult->ReadReturnCode ) );
 		return;
 	}
 }

@@ -1,6 +1,8 @@
 <?php
 
-class WSUWS_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
+namespace WSU\WSUWS_Woo_Gateway\Gateway;
+
+class Payment_Gateway extends \WC_Payment_Gateway {
 	/**
 	 * Contains the logger for the current request.
 	 *
@@ -81,7 +83,7 @@ class WSUWS_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 
 		return array(
 			'result' => 'success',
-			'redirect' => WSU\WSUWS_Woo_Gateway\request\get_request_url( $order ),
+			'redirect' => \WSU\WSUWS_Woo_Gateway\request\get_request_url( $order ),
 		);
 	}
 
@@ -94,7 +96,7 @@ class WSUWS_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 	 */
 	public static function log( $message ) {
 		if ( empty( self::$log ) ) {
-			self::$log = new WC_Logger();
+			self::$log = new \WC_Logger();
 		}
 		self::$log->add( 'wsuws', $message );
 	}

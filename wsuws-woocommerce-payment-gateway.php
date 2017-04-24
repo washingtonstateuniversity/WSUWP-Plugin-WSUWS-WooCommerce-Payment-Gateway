@@ -23,7 +23,7 @@ add_action( 'plugins_loaded', 'WSU\WSUWS_Woo_Gateway\load_gateway' );
  */
 function load_gateway() {
 	if ( class_exists( 'WC_Payment_Gateway' ) ) {
-		require dirname( __FILE__ ) . '/includes/class-wsuws-woocommerce-payment-gateway.php';
+		require dirname( __FILE__ ) . '/includes/class-payment-gateway.php';
 		add_filter( 'woocommerce_payment_gateways', 'WSU\WSUWS_Woo_Gateway\add_gateway' );
 
 		// Register the gateway's response handler.
@@ -44,6 +44,6 @@ function load_gateway() {
  * @return array
  */
 function add_gateway( $methods ) {
-	$methods[] = 'WSUWS_WooCommerce_Payment_Gateway';
+	$methods[] = 'WSU\WSUWS_Woo_Gateway\Gateway\Payment_Gateway';
 	return $methods;
 }
