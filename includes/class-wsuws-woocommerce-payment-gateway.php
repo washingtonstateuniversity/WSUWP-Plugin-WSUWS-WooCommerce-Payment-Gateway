@@ -35,8 +35,6 @@ class WSUWS_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 		$this->title = $this->get_option( 'title' );
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-		add_action( 'woocommerce_order_status_on-hold_to_processing', array( $this, 'capture_payment' ) );
-		add_action( 'woocommerce_order_status_on-hold_to_completed', array( $this, 'capture_payment' ) );
 	}
 
 	/**
@@ -100,38 +98,5 @@ class WSUWS_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 			self::$log = new WC_Logger();
 		}
 		self::$log->add( 'wsuws', $message );
-	}
-
-	/**
-	 * Captures a previously authorized payment when the order is changed from
-	 * on-hold status to "complete" or "processing".
-	 *
-	 * @since 0.0.15
-	 *
-	 * @param  int $order_id
-	 */
-	public function capture_payment( $order_id ) {
-		$order = wc_get_order( $order_id );
-		$auth_id = get_post_meta( $order_id, 'wsuws_request_guid', true );
-
-		$client = new SoapClient( WSUWS_WooCommerce_Payment_Gateway::$csp_wsdl_url );
-
-		$request = array(
-			'RequestGUID' => sanitize_key( $auth_id ),
-			'CaptureAmount' => $order->get_total(),
-			'OneStepTranType' => apply_filters( 'wsuws_gateway_trantype', '' ),
-		);
-
-		$response = $client->CaptureRequest( $request );
-
-		WSUWS_WooCommerce_Payment_Gateway::log( 'CaptureRequest: ' . print_r( $request, true ) ); // @codingStandardsIgnoreLine
-		WSUWS_WooCommerce_Payment_Gateway::log( 'CaptureRequestResponse: ' . print_r( $response, true ) ); // @codingStandardsIgnoreLine
-
-		if ( 1 === $response->CaptureRequestResult->ResponseReturnCode ) {
-			$order->update_status( 'failed', 'Payment capture failed: ' . esc_html( $response->CaptureRequestResult->ResponseReturnMessage ) );
-			return;
-		}
-
-		$order->add_order_note( 'Payment was captured.' );
 	}
 }

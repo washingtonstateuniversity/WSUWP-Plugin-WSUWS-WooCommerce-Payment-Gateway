@@ -8,25 +8,27 @@ Author URI: https://web.wsu.edu/
 Plugin URI: https://github.com/washingtonstateuniversity/WSUWP-Plugin-WSUWS-WooCommerce-Payment-Gateway
 */
 
+namespace WSU\WSUWS_Woo_Gateway;
+
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-add_action( 'plugins_loaded', 'wsuwp_load_wsuws_woocommerce_payment_gateway' );
+add_action( 'plugins_loaded', 'WSU\WSUWS_Woo_Gateway\load_gateway' );
 /**
  * Loads the WSUWS payment gateway class, which extends WooCommerce.
  *
  * @since 0.0.1
  */
-function wsuwp_load_wsuws_woocommerce_payment_gateway() {
+function load_gateway() {
 	if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		require dirname( __FILE__ ) . '/includes/class-wsuws-woocommerce-payment-gateway.php';
-		add_filter( 'woocommerce_payment_gateways', 'wsuwp_add_wsuws_woocommerce_payment_gateway' );
+		add_filter( 'woocommerce_payment_gateways', 'WSU\WSUWS_Woo_Gateway\add_gateway' );
 
 		// Register the gateway's response handler.
 		include_once dirname( __FILE__ ) . '/includes/class-wsuws-gateway-response.php';
-		new WSUWS_Gateway_Response();
+		new \WSUWS_Gateway_Response();
 	}
 }
 
@@ -39,7 +41,49 @@ function wsuwp_load_wsuws_woocommerce_payment_gateway() {
  *
  * @return array
  */
-function wsuwp_add_wsuws_woocommerce_payment_gateway( $methods ) {
+function add_gateway( $methods ) {
 	$methods[] = 'WSUWS_WooCommerce_Payment_Gateway';
 	return $methods;
+}
+
+add_action( 'woocommerce_order_status_on-hold_to_processing', 'WSU\WSUWS_Woo_Gateway\capture_payment' );
+add_action( 'woocommerce_order_status_on-hold_to_completed', 'WSU\WSUWS_Woo_Gateway\capture_payment' );
+/**
+ * Captures a previously authorized payment when the order is changed from
+ * on-hold status to "complete" or "processing".
+ *
+ * @since 0.0.15
+ *
+ * @param  int $order_id
+ */
+function capture_payment( $order_id ) {
+	$order = wc_get_order( $order_id );
+	$auth_id = get_post_meta( $order_id, 'wsuws_request_guid', true );
+
+	$client = new \SoapClient( \WSUWS_WooCommerce_Payment_Gateway::$csp_wsdl_url );
+
+	$auth_cap_response = $client->AuthCapResponse( array(
+		'RequestGUID' => sanitize_key( $auth_id ),
+	) );
+
+	if ( 0 !== $auth_cap_response->AuthCapResponseResponse->ResponseReturnCode ) {
+		$order->update_status( 'failed', 'Payment capture failed: ' . esc_html( $auth_cap_response->AuthCapResponseResponse->ResponseReturnMessage ) );
+		return;
+	}
+
+	$request = array(
+		'RequestGUID' => sanitize_key( $auth_id ),
+		'CaptureAmount' => $order->get_total(),
+		'OneStepTranType' => apply_filters( 'wsuws_gateway_trantype', '' ),
+	);
+	$response = $client->CaptureRequest( $request );
+
+	if ( 0 !== $response->CaptureRequestResult->ResponseReturnCode ) {
+		$order->update_status( 'failed', 'Payment capture failed: ' . esc_html( $response->CaptureRequestResult->ResponseReturnMessage ) );
+		return;
+	}
+
+	update_post_meta( $order->ID, 'wsuws_capture_guid', sanitize_key( $response->CaptureRequestResult->CaptureGUID ) );
+
+	$order->add_order_note( 'Payment was captured.' );
 }
