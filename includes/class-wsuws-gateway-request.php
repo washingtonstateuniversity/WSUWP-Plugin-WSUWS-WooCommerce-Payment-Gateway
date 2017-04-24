@@ -45,7 +45,7 @@ class WSUWS_Gateway_Request {
 		$redirect_url = $response->AuthRequestResult->WebPageURLAndGUID;
 
 		if ( ! empty( $request_guid ) ) {
-			update_post_meta( $order->ID, 'wsuws_request_guid', sanitize_key( $request_guid ) );
+			update_post_meta( $order->get_id(), 'wsuws_request_guid', sanitize_key( $request_guid ) );
 		}
 
 		return $redirect_url;
