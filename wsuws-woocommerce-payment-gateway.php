@@ -27,9 +27,11 @@ function load_gateway() {
 		add_filter( 'woocommerce_payment_gateways', 'WSU\WSUWS_Woo_Gateway\add_gateway' );
 
 		// Register the gateway's response handler.
-		include_once dirname( __FILE__ ) . '/includes/class-wsuws-gateway-response.php';
-		new \WSUWS_Gateway_Response();
+		include_once dirname( __FILE__ ) . '/includes/gateway-response.php';
 	}
+
+	add_action( 'woocommerce_order_status_on-hold_to_processing', 'WSU\WSUWS_Woo_Gateway\request\capture_payment' );
+	add_action( 'woocommerce_order_status_on-hold_to_completed', 'WSU\WSUWS_Woo_Gateway\request\capture_payment' );
 }
 
 /**
@@ -44,66 +46,4 @@ function load_gateway() {
 function add_gateway( $methods ) {
 	$methods[] = 'WSUWS_WooCommerce_Payment_Gateway';
 	return $methods;
-}
-
-add_action( 'woocommerce_order_status_on-hold_to_processing', 'WSU\WSUWS_Woo_Gateway\capture_payment' );
-add_action( 'woocommerce_order_status_on-hold_to_completed', 'WSU\WSUWS_Woo_Gateway\capture_payment' );
-/**
- * Captures a previously authorized payment when the order is changed from
- * on-hold status to "complete" or "processing".
- *
- * @since 0.0.15
- *
- * @param  int $order_id
- */
-function capture_payment( $order_id ) {
-	$order = wc_get_order( $order_id );
-	$auth_id = get_post_meta( $order_id, 'wsuws_request_guid', true );
-
-	// This order is being paid for with another payment method.
-	if ( 'wsuws_gateway' !== $order->get_payment_method() ) {
-		return;
-	}
-
-	// This order does not have a valid auth ID to use.
-	if ( empty( $auth_id ) ) {
-		$order->update_status( 'failed', 'No valid auth GUID found. Payment cannot be processed.' );
-		return;
-	}
-
-	$client = new \SoapClient( \WSUWS_WooCommerce_Payment_Gateway::$csp_wsdl_url );
-
-	$auth_cap_response = $client->AuthCapResponse( array(
-		'RequestGUID' => sanitize_key( $auth_id ),
-	) );
-
-	\WSUWS_WooCommerce_Payment_Gateway::log( 'AuthCapResponseResponse received: ' . print_r( $auth_cap_response, true ) ); // @codingStandardsIgnoreLine
-
-	if ( 1 === $auth_cap_response->AuthCapResponseResponse->ResponseReturnCode || // Rec type or status is invalid?
-	     2 === $auth_cap_response->AuthCapResponseResponse->ResponseReturnCode    // This transaction has been closed before.
-	) {
-		$order->update_status( 'failed', 'Payment capture failed: ' . esc_html( $auth_cap_response->AuthCapResponseResponse->ResponseReturnMessage ) );
-		return;
-	}
-
-	$request = array(
-		'RequestGUID' => sanitize_key( $auth_id ),
-		'CaptureAmount' => $order->get_total(),
-		'OneStepTranType' => apply_filters( 'wsuws_gateway_trantype', '' ),
-	);
-	$response = $client->CaptureRequest( $request );
-
-	\WSUWS_WooCommerce_Payment_Gateway::log( 'CaptureRequestResponse received: ' . print_r( $response, true ) ); // @codingStandardsIgnoreLine
-
-	if ( 1 === $response->CaptureRequestResult->ResponseReturnCode || // Rec type or status is invalid for Capture.
-	     2 === $response->CaptureRequestResult->ResponseReturnCode || // Transaction has been closed before.
-	     9 === $response->CaptureRequestResult->ResponseReturnCode    // Cybersource capture error.
-	) {
-		$order->update_status( 'failed', 'Payment capture failed: ' . esc_html( $response->CaptureRequestResult->ResponseReturnMessage ) );
-		return;
-	}
-
-	update_post_meta( $order->get_id(), 'wsuws_capture_guid', sanitize_key( $response->CaptureRequestResult->CaptureGUID ) );
-
-	$order->add_order_note( 'Payment captured successfully.' );
 }
