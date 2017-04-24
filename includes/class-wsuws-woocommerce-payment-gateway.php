@@ -116,21 +116,28 @@ class WSUWS_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 
 		$client = new SoapClient( WSUWS_WooCommerce_Payment_Gateway::$csp_wsdl_url );
 
+		$auth_cap_response = $client->AuthCapResponse( array(
+			'RequestGUID' => sanitize_key( $auth_id ),
+		) );
+
+		if ( 0 !== $auth_cap_response->AuthCapResponseResponse->ResponseReturnCode ) {
+			$order->update_status( 'failed', 'Payment capture failed: ' . esc_html( $auth_cap_response->AuthCapResponseResponse->ResponseReturnMessage ) );
+			return;
+		}
+
 		$request = array(
 			'RequestGUID' => sanitize_key( $auth_id ),
 			'CaptureAmount' => $order->get_total(),
 			'OneStepTranType' => apply_filters( 'wsuws_gateway_trantype', '' ),
 		);
-
 		$response = $client->CaptureRequest( $request );
 
-		WSUWS_WooCommerce_Payment_Gateway::log( 'CaptureRequest: ' . print_r( $request, true ) ); // @codingStandardsIgnoreLine
-		WSUWS_WooCommerce_Payment_Gateway::log( 'CaptureRequestResponse: ' . print_r( $response, true ) ); // @codingStandardsIgnoreLine
-
-		if ( 1 === $response->CaptureRequestResult->ResponseReturnCode ) {
+		if ( 0 !== $response->CaptureRequestResult->ResponseReturnCode ) {
 			$order->update_status( 'failed', 'Payment capture failed: ' . esc_html( $response->CaptureRequestResult->ResponseReturnMessage ) );
 			return;
 		}
+
+		update_post_meta( $order->ID, 'wsuws_capture_guid', sanitize_key( $response->CaptureRequestResult->CaptureGUID ) );
 
 		$order->add_order_note( 'Payment was captured.' );
 	}
