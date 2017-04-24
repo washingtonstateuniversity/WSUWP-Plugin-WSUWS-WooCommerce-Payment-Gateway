@@ -100,4 +100,18 @@ class Payment_Gateway extends \WC_Payment_Gateway {
 		}
 		self::$log->add( 'wsuws', $message );
 	}
+
+	/**
+	 * Adds the WSUWS payment gateway to the list of offered payment gateways.
+	 *
+	 * @since 0.0.1
+	 *
+	 * @param array $methods
+	 *
+	 * @return array
+	 */
+	public static function add_gateway( $methods ) {
+		$methods[] = 'WSU\WSUWS_Woo_Gateway\Gateway\Payment_Gateway';
+		return $methods;
+	}
 }
