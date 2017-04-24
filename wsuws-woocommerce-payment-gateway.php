@@ -60,6 +60,17 @@ function capture_payment( $order_id ) {
 	$order = wc_get_order( $order_id );
 	$auth_id = get_post_meta( $order_id, 'wsuws_request_guid', true );
 
+	// This order is being paid for with another payment method.
+	if ( 'wsuws_gateway' !== $order->get_payment_method() ) {
+		return;
+	}
+
+	// This order does not have a valid auth ID to use.
+	if ( empty( $auth_id ) ) {
+		$order->update_status( 'failed', 'No valid auth GUID found. Payment cannot be processed.' );
+		return;
+	}
+
 	$client = new \SoapClient( \WSUWS_WooCommerce_Payment_Gateway::$csp_wsdl_url );
 
 	$auth_cap_response = $client->AuthCapResponse( array(
