@@ -66,7 +66,11 @@ function capture_payment( $order_id ) {
 		'RequestGUID' => sanitize_key( $auth_id ),
 	) );
 
-	if ( 0 !== $auth_cap_response->AuthCapResponseResponse->ResponseReturnCode ) {
+	\WSUWS_WooCommerce_Payment_Gateway::log( 'AuthCapResponseResponse received: ' . print_r( $auth_cap_response, true ) ); // @codingStandardsIgnoreLine
+
+	if ( 1 === $auth_cap_response->AuthCapResponseResponse->ResponseReturnCode || // Rec type or status is invalid?
+	     2 === $auth_cap_response->AuthCapResponseResponse->ResponseReturnCode    // This transaction has been closed before.
+	) {
 		$order->update_status( 'failed', 'Payment capture failed: ' . esc_html( $auth_cap_response->AuthCapResponseResponse->ResponseReturnMessage ) );
 		return;
 	}
@@ -78,7 +82,12 @@ function capture_payment( $order_id ) {
 	);
 	$response = $client->CaptureRequest( $request );
 
-	if ( 0 !== $response->CaptureRequestResult->ResponseReturnCode ) {
+	\WSUWS_WooCommerce_Payment_Gateway::log( 'CaptureRequestResponse received: ' . print_r( $response, true ) ); // @codingStandardsIgnoreLine
+
+	if ( 1 === $response->CaptureRequestResult->ResponseReturnCode || // Rec type or status is invalid for Capture.
+	     2 === $response->CaptureRequestResult->ResponseReturnCode || // Transaction has been closed before.
+	     9 === $response->CaptureRequestResult->ResponseReturnCode    // Cybersource capture error.
+	) {
 		$order->update_status( 'failed', 'Payment capture failed: ' . esc_html( $response->CaptureRequestResult->ResponseReturnMessage ) );
 		return;
 	}
