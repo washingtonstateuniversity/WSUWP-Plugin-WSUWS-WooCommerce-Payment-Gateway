@@ -1,6 +1,8 @@
 <?php
 
-class WSUWS_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
+namespace WSU\WSUWS_Woo_Gateway\Gateway;
+
+class Payment_Gateway extends \WC_Payment_Gateway {
 	/**
 	 * Contains the logger for the current request.
 	 *
@@ -75,14 +77,13 @@ class WSUWS_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 	 * @return array
 	 */
 	public function process_payment( $order_id ) {
-		include_once dirname( __FILE__ ) . '/class-wsuws-gateway-request.php';
+		include_once dirname( __FILE__ ) . '/gateway-request.php';
 
 		$order = wc_get_order( $order_id );
-		$request = new WSUWS_Gateway_Request();
 
 		return array(
 			'result' => 'success',
-			'redirect' => $request->get_request_url( $order ),
+			'redirect' => \WSU\WSUWS_Woo_Gateway\request\get_request_url( $order ),
 		);
 	}
 
@@ -95,8 +96,22 @@ class WSUWS_WooCommerce_Payment_Gateway extends WC_Payment_Gateway {
 	 */
 	public static function log( $message ) {
 		if ( empty( self::$log ) ) {
-			self::$log = new WC_Logger();
+			self::$log = new \WC_Logger();
 		}
 		self::$log->add( 'wsuws', $message );
+	}
+
+	/**
+	 * Adds the WSUWS payment gateway to the list of offered payment gateways.
+	 *
+	 * @since 0.0.1
+	 *
+	 * @param array $methods
+	 *
+	 * @return array
+	 */
+	public static function add_gateway( $methods ) {
+		$methods[] = 'WSU\WSUWS_Woo_Gateway\Gateway\Payment_Gateway';
+		return $methods;
 	}
 }
