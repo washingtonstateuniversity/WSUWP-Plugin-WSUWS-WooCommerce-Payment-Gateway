@@ -15,13 +15,13 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-add_action( 'plugins_loaded', 'WSU\WSUWS_Woo_Gateway\load_gateway' );
+add_action( 'plugins_loaded', 'WSU\WSUWS_Woo_Gateway\bootstrap' );
 /**
  * Loads the WSUWS payment gateway class, which extends WooCommerce.
  *
  * @since 0.0.1
  */
-function load_gateway() {
+function bootstrap() {
 	if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		require dirname( __FILE__ ) . '/includes/class-payment-gateway.php';
 		add_filter( 'woocommerce_payment_gateways', array( '\WSU\WSUWS_Woo_Gateway\Gateway\Payment_Gateway', 'add_gateway' ) );
