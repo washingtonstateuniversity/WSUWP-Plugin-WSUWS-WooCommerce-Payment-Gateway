@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WSUWS WooCommerce Payment Gateway
-Version: 0.0.20
+Version: 0.0.21
 Description: A WooCommerce payment gateway for WSU's webservice payment system.
 Author: washingtonstateuniversity, jeremyfelt
 Author URI: https://web.wsu.edu/
@@ -25,11 +25,11 @@ function bootstrap() {
 	if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		require dirname( __FILE__ ) . '/includes/class-payment-gateway.php';
 		add_filter( 'woocommerce_payment_gateways', array( '\WSU\WSUWS_Woo_Gateway\Gateway\Payment_Gateway', 'add_gateway' ) );
-
-		// Register the gateway's response handler.
-		include_once dirname( __FILE__ ) . '/includes/gateway-response.php';
 	}
 
-	add_action( 'woocommerce_order_status_on-hold_to_processing', 'WSU\WSUWS_Woo_Gateway\request\capture_payment' );
-	add_action( 'woocommerce_order_status_on-hold_to_completed', 'WSU\WSUWS_Woo_Gateway\request\capture_payment' );
+	include_once dirname( __FILE__ ) . '/includes/gateway-response.php';
+	include_once dirname( __FILE__ ) . '/includes/gateway-request.php';
+
+	add_action( 'woocommerce_order_status_on-hold_to_processing', '\WSU\WSUWS_Woo_Gateway\request\capture_payment' );
+	add_action( 'woocommerce_order_status_on-hold_to_completed', '\WSU\WSUWS_Woo_Gateway\request\capture_payment' );
 }
