@@ -19,7 +19,7 @@ class Payment_Gateway extends \WC_Payment_Gateway {
 	 *
 	 * @var string
 	 */
-	public static $csp_wsdl_url = 'https://dev-ewebservice.wsu.edu/CentralPaymentSite_WS/service.asmx?wsdl';
+	public static $csp_wsdl_url = 'https://ewebservice.wsu.edu/CentralPaymentSite_WS/service.asmx?wsdl';
 
 	/**
 	 * WSUWS_WooCommerce_Payment_Gateway constructor.
