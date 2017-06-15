@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WSUWS WooCommerce Payment Gateway
-Version: 1.0.0
+Version: 1.0.1
 Description: A WooCommerce payment gateway for WSU's webservice payment system.
 Author: washingtonstateuniversity, jeremyfelt
 Author URI: https://web.wsu.edu/
