@@ -19,8 +19,8 @@ function get_request_url( $order ) {
 		'MerchantID' => apply_filters( 'wsuws_gateway_merchant_id', '' ),
 		'AuthorizationAmount' => $order->get_total(), // decimal, required
 		'OneStepTranType' => apply_filters( 'wsuws_gateway_trantype', '' ),
-		'ApplicationIDPrimary' => apply_filters( 'wsuws_gateway_application_id', '' ),
-		'ApplicationIDSecondary' => apply_filters( 'wsuws_gateway_applicaiton_id_secondary', '' ),
+		'ApplicationIDPrimary' => $order->get_billing_first_name(),
+		'ApplicationIDSecondary' => $order->get_billing_last_name(),
 		'ReturnURL' => $order->get_checkout_payment_url(),
 		'AuthorizationAttemptLimit' => 3,
 		'EmailAddressDeptContact' => apply_filters( 'wsuws_gateway_contact_email', '' ),
