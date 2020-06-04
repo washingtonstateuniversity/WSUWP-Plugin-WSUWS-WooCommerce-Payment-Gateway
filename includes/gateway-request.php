@@ -13,12 +13,16 @@ namespace WSU\WSUWS_Woo_Gateway\request;
  * @return string URL to redirect the customer to when an order is placed.
  */
 function get_request_url( $order ) {
+
 	$client = new \SoapClient( \WSU\WSUWS_Woo_Gateway\Gateway\Payment_Gateway::$csp_wsdl_url );
 
+	$trans_type = get_option( 'wsu_mrktplace_trans_type' );
+	$merchant_id = get_option( 'wsu_mrktplace_merchant_id' );
+
 	$args = array(
-		'MerchantID' => apply_filters( 'wsuws_gateway_merchant_id', '' ),
+		'MerchantID' => ( ! empty( $merchant_id ) ) ? $merchant_id : apply_filters( 'wsuws_gateway_merchant_id', '' ),
 		'AuthorizationAmount' => $order->get_total(), // decimal, required
-		'OneStepTranType' => apply_filters( 'wsuws_gateway_trantype', '' ),
+		'OneStepTranType' => ( ! empty( $trans_type ) ) ? $trans_type : apply_filters( 'wsuws_gateway_trantype', '' ),
 		'ApplicationIDPrimary' => $order->get_billing_first_name(),
 		'ApplicationIDSecondary' => $order->get_billing_last_name(),
 		'ReturnURL' => $order->get_checkout_payment_url(),
