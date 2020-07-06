@@ -7,7 +7,7 @@ class Settings {
 
 		add_filter( 'woocommerce_get_sections_products', array( __CLASS__, 'add_integration_section' ) );
 
-		add_filter( 'woocommerce_get_settings_payment', array( __CLASS__, 'add_mrktplace_settings' ), 1, 2 );
+		add_filter( 'woocommerce_get_settings_products', array( __CLASS__, 'add_mrktplace_settings' ), 1, 11 );
 
 	}
 
