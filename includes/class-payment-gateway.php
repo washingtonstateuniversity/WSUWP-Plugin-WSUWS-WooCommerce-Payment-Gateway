@@ -45,6 +45,7 @@ class Payment_Gateway extends \WC_Payment_Gateway {
 	 * @since 0.0.1
 	 */
 	public function init_form_fields() {
+
 		$this->form_fields = array(
 			'enabled' => array(
 				'title' => 'Enable/Disable',
