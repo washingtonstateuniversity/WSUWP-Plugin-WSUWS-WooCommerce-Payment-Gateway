@@ -32,6 +32,7 @@ function get_request_url( $order ) {
 		'PostBackURL' => esc_url( get_home_url( get_current_blog_id(), '/this-value-is-useless-but-we-have-to-include-it-anyway/' ) ),
 	);
 
+
 	\WSU\WSUWS_Woo_Gateway\Gateway\Payment_Gateway::log( 'Request arguments for order ' . $order->get_order_number() . ':' . print_r( $args, true ) ); // @codingStandardsIgnoreLine
 
 	$response = $client->AuthRequest( $args );
@@ -43,6 +44,7 @@ function get_request_url( $order ) {
 
 	if ( ! empty( $request_guid ) ) {
 		update_post_meta( $order->get_id(), 'wsuws_request_guid', sanitize_key( $request_guid ) );
+		update_post_meta( $order->get_id(), 'wsuws_request_args', json_encode( $args ) );
 	}
 
 	return $redirect_url;
