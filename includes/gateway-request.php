@@ -61,6 +61,7 @@ function get_request_url( $order ) {
 function capture_payment( $order_id ) {
 	$order = wc_get_order( $order_id );
 	$auth_id = get_post_meta( $order_id, 'wsuws_request_guid', true );
+	$trans_type = get_option( 'wsu_mrktplace_trans_type' );
 
 	// This order is being paid for with another payment method.
 	if ( 'wsuws_gateway' !== $order->get_payment_method() ) {
@@ -91,8 +92,9 @@ function capture_payment( $order_id ) {
 	$request = array(
 		'RequestGUID' => sanitize_key( $auth_id ),
 		'CaptureAmount' => $order->get_total(),
-		'OneStepTranType' => apply_filters( 'wsuws_gateway_trantype', '' ),
+		'OneStepTranType' => ( ! empty( $trans_type ) ) ? $trans_type : apply_filters( 'wsuws_gateway_trantype', '' ),
 	);
+	
 	$response = $client->CaptureRequest( $request );
 
 	\WSU\WSUWS_Woo_Gateway\Gateway\Payment_Gateway::log( 'CaptureRequestResponse received: ' . print_r( $response, true ) ); // @codingStandardsIgnoreLine
