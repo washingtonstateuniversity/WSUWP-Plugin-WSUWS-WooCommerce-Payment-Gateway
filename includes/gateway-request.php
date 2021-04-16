@@ -94,12 +94,13 @@ function capture_payment( $order_id ) {
 		'CaptureAmount' => $order->get_total(),
 		'OneStepTranType' => ( ! empty( $trans_type ) ) ? $trans_type : apply_filters( 'wsuws_gateway_trantype', '' ),
 	);
-	
+
 	$response = $client->CaptureRequest( $request );
 
 	\WSU\WSUWS_Woo_Gateway\Gateway\Payment_Gateway::log( 'CaptureRequestResponse received: ' . print_r( $response, true ) ); // @codingStandardsIgnoreLine
 
-	$order->add_order_note( 'CaptureRequestResponse received: ' . print_r( $response, true ) );
+
+	update_post_meta( $order->get_id(), 'wsuws_capture_response', sanitize_text_field( print_r( $response, true ) ) );
 
 	if ( 1 === $response->CaptureRequestResult->ResponseReturnCode || // Rec type or status is invalid for Capture.
 	     2 === $response->CaptureRequestResult->ResponseReturnCode || // Transaction has been closed before.
