@@ -97,6 +97,8 @@ function capture_payment( $order_id ) {
 
 	\WSU\WSUWS_Woo_Gateway\Gateway\Payment_Gateway::log( 'CaptureRequestResponse received: ' . print_r( $response, true ) ); // @codingStandardsIgnoreLine
 
+	$order->add_order_note( 'CaptureRequestResponse received: ' . print_r( $response, true ) );
+
 	if ( 1 === $response->CaptureRequestResult->ResponseReturnCode || // Rec type or status is invalid for Capture.
 	     2 === $response->CaptureRequestResult->ResponseReturnCode || // Transaction has been closed before.
 	     9 === $response->CaptureRequestResult->ResponseReturnCode    // Cybersource capture error.
@@ -104,6 +106,8 @@ function capture_payment( $order_id ) {
 		$order->update_status( 'failed', 'Payment capture failed: ' . esc_html( $response->CaptureRequestResult->ResponseReturnMessage ) );
 		return;
 	}
+
+	update_post_meta( $order->get_id(), 'wsuws_capture_request', json_encode( $request ) );
 
 	update_post_meta( $order->get_id(), 'wsuws_capture_guid', sanitize_key( $response->CaptureRequestResult->CaptureGUID ) );
 
