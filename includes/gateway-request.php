@@ -16,7 +16,8 @@ function get_request_url( $order ) {
 
 	$client = new \SoapClient( \WSU\WSUWS_Woo_Gateway\Gateway\Payment_Gateway::$csp_wsdl_url );
 
-	$trans_type = get_option( 'wsu_mrktplace_trans_type' );
+	$product_trans_type = get_post_meta( $order->get_id(), '_wsu_product_trans_type', true );
+	$trans_type = ( ! empty( $product_trans_type ) ) ? $product_trans_type : get_option( 'wsu_mrktplace_trans_type' );
 	$merchant_id = get_option( 'wsu_mrktplace_merchant_id' );
 
 	$args = array(
@@ -59,9 +60,11 @@ function get_request_url( $order ) {
  * @param  int $order_id
  */
 function capture_payment( $order_id ) {
+	
 	$order = wc_get_order( $order_id );
 	$auth_id = get_post_meta( $order_id, 'wsuws_request_guid', true );
-	$trans_type = get_option( 'wsu_mrktplace_trans_type' );
+	$product_trans_type = get_post_meta( $order_id, '_wsu_product_trans_type', true );
+	$trans_type = ( ! empty( $product_trans_type ) ) ? $product_trans_type : get_option( 'wsu_mrktplace_trans_type' );
 
 	// This order is being paid for with another payment method.
 	if ( 'wsuws_gateway' !== $order->get_payment_method() ) {
